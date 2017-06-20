@@ -1,0 +1,78 @@
+{
+    "dataSetSLIManifestList": [{
+        "dataSetSLIManifest": {
+            "parts": [{
+                    "columnName": "tab_inv_item.col_quantity",
+                    "populates": [
+                        "fact.item_quantity"
+                    ],
+                    "mode": "FULL"
+                },
+                {
+                    "columnName": "tab_inv_item.col_total",
+                    "populates": [
+                        "fact.item_total"
+                    ],
+                    "mode": "FULL"
+                },
+                {
+                    "columnName": "tab_inv.col_total",
+                    "populates": [
+                        "fact.invoice_total"
+                    ],
+                    "mode": "FULL"
+                },
+                {
+                    "columnName": "tab_inv.col_name",
+                    "populates": [
+                        "l_inv.invoice_name"
+                    ],
+                    "mode": "FULL",
+                    "referenceKey": 1
+                },
+                {
+                    "columnName": "tab_inv.dt_invoice",
+                    "constraints": {
+                        "date": "yyyy-MM-dd"
+                    },
+                    "populates": [
+                        "dt_invoice.date.day.yyyy_mm_dd"
+                    ],
+                    "mode": "FULL",
+                    "referenceKey": 1
+                },
+                {
+                    "columnName": "tab_pers.col_bn",
+                    "populates": [
+                        "l_pers.bn"
+                    ],
+                    "mode": "FULL",
+                    "referenceKey": 1
+                },
+                {
+                    "columnName": "tab_pers.col_fn",
+                    "populates": [
+                        "l_pers.firstname"
+                    ],
+                    "mode": "FULL"
+                },
+                {
+                    "columnName": "tab_pers.col_sn",
+                    "populates": [
+                        "l_pers.surname"
+                    ],
+                    "mode": "FULL"
+                },
+                {
+                    "columnName": "tab_pers.col_hn",
+                    "populates": [
+                        "l_pers.name"
+                    ],
+                    "mode": "FULL"
+                }
+            ],
+            "file": "invoice.csv",
+            "dataSet": "dataset.ds_invoice"
+        }
+    }]
+}

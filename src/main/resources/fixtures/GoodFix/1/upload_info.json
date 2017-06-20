@@ -1,0 +1,157 @@
+{
+  "dataSetSLIManifestList": [
+    {
+      "dataSetSLIManifest": {
+        "parts": [
+          {
+            "referenceKey": 1,
+            "populates": [
+              "attr.project.key"
+            ],
+            "mode": "FULL",
+            "columnName": "attr.project.key"
+          },
+          {
+            "populates": [
+              "attr.project.description"
+            ],
+            "mode": "FULL",
+            "columnName": "attr.project.description"
+          }
+        ],
+        "dataSet": "dataset.project",
+        "file": "project.csv"
+      }
+    },
+    {
+      "dataSetSLIManifest": {
+        "parts": [
+          {
+            "referenceKey": 1,
+            "populates": [
+              "minor_name"
+            ],
+            "mode": "FULL",
+            "columnName": "minor_name"
+          },
+          {
+            "referenceKey": 1,
+            "populates": [
+              "minor_numeric"
+            ],
+            "mode": "FULL",
+            "columnName": "minor_numeric"
+          },
+          {
+            "referenceKey": 1,
+            "populates": [
+              "major_name"
+            ],
+            "mode": "FULL",
+            "columnName": "major_name"
+          }
+        ],
+        "dataSet": "dataset.minor_major_version",
+        "file": "minor_major_version.csv"
+      }
+    },
+    {
+      "dataSetSLIManifest": {
+        "parts": [
+          {
+            "referenceKey": 1,
+            "populates": [
+              "attr.issue.key"
+            ],
+            "mode": "FULL",
+            "columnName": "attr.issue.key"
+          },
+          {
+            "populates": [
+              "attr.issue.link"
+            ],
+            "mode": "FULL",
+            "columnName": "attr.issue.link"
+          },
+          {
+            "populates": [
+              "created_on.date.mdyy"
+            ],
+            "mode": "FULL",
+            "constraints": {
+              "date": "yyyy-MM-dd"
+            },
+            "columnName": "created_on",
+            "referenceKey": 1
+          },
+          {
+            "populates": [
+              "attr.project.key"
+            ],
+            "mode": "FULL",
+            "columnName": "dataset.project",
+            "referenceKey": 1
+          },
+          {
+            "populates": [
+              "minor_name"
+            ],
+            "mode": "FULL",
+            "columnName": "dataset.minor_major_version",
+            "referenceKey": 1
+          }
+        ],
+        "dataSet": "dataset.issue",
+        "file": "issue_details.csv"
+      }
+    },
+    {
+      "dataSetSLIManifest": {
+        "parts": [
+          {
+            "referenceKey": 1,
+            "populates": [
+              "reason"
+            ],
+            "mode": "FULL",
+            "columnName": "reason"
+          }
+        ],
+        "dataSet": "dataset.reason",
+        "file": "reasons.csv"
+      }
+    },
+    {
+      "dataSetSLIManifest": {
+        "parts": [
+          {
+            "referenceKey": 1,
+            "populates": [
+              "reason_issue"
+            ],
+            "mode": "FULL",
+            "columnName": "reason_issue"
+          },
+          {
+            "populates": [
+              "reason"
+            ],
+            "mode": "FULL",
+            "columnName": "dataset.reason",
+            "referenceKey": 1
+          },
+          {
+            "populates": [
+              "attr.issue.key"
+            ],
+            "mode": "FULL",
+            "columnName": "dataset.issue",
+            "referenceKey": 1
+          }
+        ],
+        "dataSet": "dataset.issue_reason",
+        "file": "issue_reasons.csv"
+      }
+    }
+  ]
+}

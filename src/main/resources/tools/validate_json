@@ -1,0 +1,142 @@
+#!/usr/bin/env python2
+
+from __future__ import absolute_import
+
+import argparse
+import json
+from os.path import basename
+from os.path import dirname
+import re
+import sys
+
+from jsonschema.validators import validator_for
+
+
+class JSONFile(object):
+
+    def __init__(self, path, data):
+        self.path = path
+        self.data = data
+
+
+def _json_file(path):
+    with open(path) as f:
+        return JSONFile(path, json.load(f))
+
+
+parser = argparse.ArgumentParser(
+    description="JSON Schema Validation CLI"
+)
+parser.add_argument(
+    "schema",
+    help="JSON Schema to validate with",
+    type=_json_file
+)
+parser.add_argument(
+    "inputfile",
+    type=_json_file,
+    help="JSON file to validate"
+)
+parser.add_argument(
+    "outputfile",
+    help="path to store output XML in",
+    nargs='?',
+    type=argparse.FileType('w'),
+    default=sys.stdout
+)
+
+
+class XMLOutput(object):
+
+    def __init__(self, inputfile, sink):
+        self.inputfile = inputfile
+        self.sink = sink
+        self.error_format = """
+            <testcase classname="{junit_classname}" name="{junit_testname}">
+            <failure type="{msg}">{path}: {msg}</failure></testcase>
+        """
+        self.errors = 0
+
+    def header(self):
+        self.sink.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        self.sink.write(
+            """<testsuites disabled="" errors=""
+               failures="" name="" tests="" time="">\n""")
+        self.sink.write('<testsuite name="validate upload manifests">\n')
+
+    def error(self, error):
+        self.errors += 1
+        self.sink.write(self.error_format.format(
+            msg=error.message,
+            path=u'.'.join(map(unicode, error.path)),
+            **self.junit_attributes(self.inputfile)
+        ))
+
+    def footer(self):
+        format = """<testcase classname="{junit_classname}"
+                    name="{junit_testname}"/>\n"""
+        if self.errors == 0:
+            self.sink.write(format.format(
+                **self.junit_attributes(self.inputfile)
+            ))
+        self.sink.write('</testsuite>\n</testsuites>\n')
+        return self.errors
+
+    def junit_attributes(self, inputfile):
+        classname = re.sub(
+            r'^\./',
+            '',
+            dirname(inputfile)
+        ).replace('/', '.')
+        testname = basename(inputfile)
+        return dict(
+            junit_classname=classname,
+            junit_testname=testname,
+        )
+
+
+class TXTOutput(object):
+
+    def __init__(self, inputfile, sink):
+        self.inputfile = inputfile
+        self.sink = sink
+        self.error_format = "{path}:\n  {msg}\n"
+        self.errors = 0
+
+    def header(self):
+        pass
+
+    def error(self, error):
+        self.errors += 1
+        self.sink.write(self.error_format.format(
+            msg=error.message,
+            path=u'.'.join(map(unicode, error.path))
+        ))
+
+    def footer(self):
+        if self.errors == 0:
+            print("%s: OK" % self.inputfile)
+        else:
+            print("%s: %d error(s)" % (self.inputfile, self.errors))
+        return self.errors
+
+
+def main(args):
+    out = (TXTOutput if args.outputfile == sys.stdout else XMLOutput)(
+        args.inputfile.path, args.outputfile
+    )
+    validator = validator_for(args.schema.data)(schema=args.schema.data)
+    out.header()
+    for error in validator.iter_errors(args.inputfile.data):
+        out.error(error)
+    return int(out.footer() > 0)
+
+
+if __name__ == '__main__':
+    try:
+        args = parser.parse_args(args=sys.argv[1:] or ["--help"])
+    except Exception, e:
+        sys.stderr.write("%s\n" % (e,))
+        sys.exit(1)
+    else:
+        sys.exit(main(args))
