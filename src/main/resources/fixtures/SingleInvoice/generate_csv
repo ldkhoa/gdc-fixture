@@ -1,0 +1,124 @@
+#!/usr/bin/env python
+from __future__ import print_function
+import argparse
+from datetime import date
+import math
+import os.path
+import random
+import sys
+
+
+def read_txt(filename):
+    with open(os.path.join(sys.path[0], filename)) as f:
+        return f.read().splitlines()
+
+
+def get_all_days(start_year, end_year, include_weekends=False):
+    start_day = date(start_year, 1, 1).toordinal()
+    end_day = date(end_year+1, 1, 1).toordinal()
+    days = [date.fromordinal(day) for day in range(start_day, end_day)]
+    return [day.isoformat()
+            for day in days if day.isoweekday() < 6 or include_weekends]
+
+
+# it would be nice to have more than one invoice per person
+def generate_persons(maxrow, max_persons):
+    firstnames = read_txt('firstnames.txt')
+    surnames = read_txt('surnames.txt')
+    num_persons = int(math.ceil(maxrow / 3.0)) if max_persons == 0 else max_persons
+    persons = [[str(i), random.choice(firstnames), random.choice(surnames)]
+               for i in range(0, num_persons)]
+    return [[p[0], '"%s"' % p[1], '"%s"' % p[2], '"%s %s"' % (p[1], p[2])]
+            for p in persons]
+
+
+def header():
+    columns = """tab_inv_item.col_quantity
+tab_inv_item.col_total
+tab_inv.col_total
+tab_inv.col_name
+tab_inv.dt_invoice
+tab_pers.col_bn
+tab_pers.col_fn
+tab_pers.col_sn
+tab_pers.col_hn""".split()
+    return ','.join(['"%s"' % c for c in columns])
+
+
+def arg_parser():
+    parser = argparse.ArgumentParser(
+        description="Generate random data for SingleInvoice project"
+    )
+    parser.add_argument(
+        "start_year",
+        help="First year of your invoice data",
+        type=int
+    )
+    parser.add_argument(
+        "end_year",
+        help="Last year of your invoice data",
+        type=int
+    )
+    parser.add_argument(
+        "--invoices",
+        "-i",
+        type=int,
+        default=260,
+        help="Number of invoices per year (default is 260)."
+    )
+    parser.add_argument(
+        "--persons",
+        "-p",
+        type=int,
+        default=0,
+        help="""Number of persons.
+By default, enough to have about 3 invoices per each person."""
+    )
+    parser.add_argument(
+        "--prng-seed",
+        "-s",
+        type=int,
+        default=None,
+        help="""Initialize internal state of the pseudo-random number generator
+to a known state."""
+    )
+    parser.add_argument(
+        "--weekends",
+        "-w",
+        action="store_true",
+        default=False,
+        help="Include weekend days. Default is not to include."
+    )
+    return parser
+
+
+def main(cmd_args):
+    seed = cmd_args.prng_seed
+    if seed is not None:
+        random.seed(seed)
+    start_year = cmd_args.start_year
+    end_year = cmd_args.end_year
+    rows_per_year = cmd_args.invoices
+    maxrows = (end_year - start_year + 1) * rows_per_year
+    days = get_all_days(start_year, end_year, cmd_args.weekends)
+    persons = generate_persons(maxrows, cmd_args.persons)
+    print(header())
+    for row in range(1, maxrows+1):
+        cols = [
+            str(random.randint(1, 10)),
+            str(random.randint(1, 30)),
+            str(random.randint(1, 50)),
+            'inv-%0*d' % (28, row),
+            random.choice(days),
+        ] + random.choice(persons)
+        print(','.join(cols))
+
+
+if __name__ == '__main__':
+    try:
+        cmd_args = arg_parser().parse_args(args=sys.argv[1:] or ["--help"])
+    except Exception, e:
+        sys.stderr.write("%s\n" % (e,))
+        sys.exit(1)
+    else:
+        sys.exit(main(cmd_args))

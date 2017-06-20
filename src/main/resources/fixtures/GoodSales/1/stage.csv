@@ -1,0 +1,9 @@
+d_stage_isactive.nm_isactive;d_stage_isclosed.nm_isclosed;d_stage_iswon.nm_iswon;f_stage.nm_stagename;d_stage_status.nm_status;f_stage.nm_order;f_stage.nm_name
+true;false;false;Short List;7;103;Short List
+true;false;false;Interest;7;101;Interest
+true;false;false;Discovery;7;102;Discovery
+true;false;false;Risk Assessment;7;104;Risk Assessment
+true;false;false;Conviction;7;105;Conviction
+true;false;false;Negotiation;7;106;Negotiation
+true;true;true;Closed Won;11;107;Closed Won
+true;true;false;Closed Lost;13;108;Closed Lost
