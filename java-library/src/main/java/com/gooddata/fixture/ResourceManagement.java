@@ -1,4 +1,5 @@
 package com.gooddata.fixture;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,15 +28,33 @@ public class ResourceManagement {
         this.artifact = getArtifact();
     }
 
-    public String getResourceAsString(String path) throws IOException {
-        InputStream is = artifact.getInputStream(artifact.getEntry(path));
+    /**
+     * Read content from resource file in Fixture Jar artifact
+     * @param resourceDir path to resource file in Fixture Jar artifact. e.g: GoodFix/1/README.md
+     * @return Content of resource file
+     * @throws IOException if an I/O error has occurred
+     */
+    public String getResourceAsString(String resourceDir) throws IOException {
+        InputStream is = artifact.getInputStream(artifact.getEntry(resourceDir));
         return new BufferedReader(new InputStreamReader(is)).lines().collect(Collectors.joining("\n"));
     }
 
+    /**
+     * Extract resources from given template in Fixture Jar artifact and copy to new directory
+     * @param template the resource template. e.g: GOODFIX, GOODSALES,...
+     * @param desDir the destination directory
+     * @throws IOException if an I/O error has occurred
+     */
     public void copyResources(ResourceTemplate template, String desDir) throws IOException {
         copyResources(template.getPath(), desDir);
     }
 
+    /**
+     * Extract resources (can be folder or file) in Fixture Jar artifact and copy to new directory 
+     * @param resourcesDir resources directory in Fixture Jar artifact. e.g: GoodFix/1/, GoodFix/1/README.md
+     * @param desDir the destination directory
+     * @throws IOException if an I/O error has occurred
+     */
     public void copyResources(String resourcesDir, String desDir) throws IOException {
         Enumeration<JarEntry> entries = artifact.entries();
         while (entries.hasMoreElements()) {
@@ -85,25 +104,25 @@ public class ResourceManagement {
     }
 
     private JarFile getArtifact() {
-        String jarName = "gdc-fixture-" + getArtifactVersion() + ".jar";
+        String artifactName = "gdc-fixture-" + getArtifactVersion() + ".jar";
 
         try {
             File artifact = Files.walk(Paths.get(System.getProperty("user.home") + "/.m2/repository"))
                     .map(p -> p.toFile())
-                    .filter(f -> f.getName().equals(jarName))
+                    .filter(f -> f.getName().equals(artifactName))
                     .findFirst()
                     .get();
             return new JarFile(artifact);
 
         } catch (IOException e) {
-            throw new RuntimeException(jarName + " not found!");
+            throw new RuntimeException(artifactName + " not found!");
         }
     }
 
     public enum ResourceTemplate {
-        GOODFIX("fixtures/GoodFix"),
-        GOODSALES("fixtures/GoodSales"),
-        SINGLE_INVOICE("fixtures/SingleInvoice");
+        GOODFIX("GoodFix"),
+        GOODSALES("GoodSales"),
+        SINGLE_INVOICE("SingleInvoice");
 
         private String path;
 
